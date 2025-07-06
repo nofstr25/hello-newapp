@@ -16,7 +16,7 @@ podTemplate(containers: [
               echo "Building docker image..."
               sh "echo docker push $appimage"
             }
-        } //end build
+        } //end hello
     }
 }
 
