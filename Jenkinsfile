@@ -1,32 +1,22 @@
-pipeline {
-    agent {
-        kubernetes {
-            yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: kaniko
-    image: gcr.io/kaniko-project/executor:debug
-    command:
-    - /busybox/cat
-    tty: true
-    volumeMounts:
-    - name: docker-config
-      mountPath: /kaniko/.docker
-  volumes:
-  - name: docker-config
-    configMap:
-      name: docker-cred
-"""
-        }
-    }
-    
-    stages {
+podTemplate(containers: [
+      containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent', ttyEnabled: true),
+      containerTemplate(name: 'docker', image: 'gcr.io/kaniko-project/executor:debug-v0.19.0', command: "/busybox/cat", ttyEnabled: true)
+  ])
+  {
+    node(POD_LABEL) {
+        stage('chackout') {
+            container('jnlp') {
+            sh '/usr/bin/git config --global http.sslVerify false'
+	    checkout scm
+          }
+        } // end chackout
+
         stage('Hello') {
-            steps {
-                echo 'Hello World from SCM Pipeline!'
+            container('docker') {
+              echo "Building docker image..."
+              sh "echo docker push $appimage"
             }
-        }
+        } //end build
     }
 }
+
