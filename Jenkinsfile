@@ -1,58 +1,37 @@
-
-def appname = "hello-newapp"
-def repo = "elevy99927"  // Replace with your DockerHub username
+def branch = env.BRANCH_NAME
+def build = env.BUILD_NUMBER
+def appname = "helloworld"
 def artifactory = "docker.io" 
-def appimage = "docker.io/${repo}/${appname}"
-def apptag = "${env.BUILD_NUMBER}"
+def repo = "elevy99927" 
+def appimage = "${repo}/${appname}"
+def apptag = "${build}"
 
 podTemplate(containers: [
       containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent', ttyEnabled: true),
-      containerTemplate(name: 'docker', image: 'gcr.io/kaniko-project/executor:debug-v0.19.0', command: "/busybox/cat", ttyEnabled: true)
+      containerTemplate(name: 'docker', image: 'gcr.io/kaniko-project/executor:v1.23.0-debug', command: '/busybox/cat', ttyEnabled: true)
   ],
   volumes: [
      configMapVolume(mountPath: '/kaniko/.docker/', configMapName: 'docker-cred')
   ])  {
     node(POD_LABEL) {
-        stage('chackout') {
+        stage('checkout') {
             container('jnlp') {
-            sh '/usr/bin/git config --global http.sslVerify false'
-	    checkout scm
-          }
-        } // end chackout
+                sh '/usr/bin/git config --global http.sslVerify false'
+                checkout scm
+            }
+        }
 
         stage('build') {
             container('docker') {
-              echo "Building docker image..."
-	      echo "Original step was using docker for build."
-	      echo "You will need to use kaniko instead"
-              sh "echo docker build -t $appimage --no-cache ."
-              sh "echo docker login $artifactory -u admin -p password"
-              sh "echo docker push $appimage"
+                echo "Building docker image with Kaniko..."
+                sh "/kaniko/executor --force --context=dir://${env.WORKSPACE} --destination=${appimage}:${apptag}"
             }
-        } //end build
+        }
 
         stage('deploy') {
-            container('docker') {
-	      if (DEPLOY) {
-                echo "***** Doing some deployment stuff *********"
-             }  else {
-                echo "***** NO DEPLOY - Doing somthing else. Testing? *********"
-             }
-           }
-        } //end deploy
-    }
-    post {
-        always {
-            echo 'Pipeline completed!'
-        }
-        success {
-            echo 'Pipeline succeeded!'
-            echo 'Send sucess email'
-            echo 'Notify CMDB'
-        }
-        failure {
-            echo 'Pipeline failed!'
-            echo 'send error email'
+            container('jnlp') {
+                echo "helm install myapp"
+            }
         }
     }
 }
