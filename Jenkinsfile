@@ -29,10 +29,12 @@ podTemplate(containers: [
         }
         stage ('helm install'){
             container('jnlp') {
-                //demo step. you will need to update the podTemplate, and use image with k8s utils
+                //This is just a demo step.
+                //Jnlp does NOT support 'sudo'. 
+                //You will need to update the podTemplate, and use image with k8s utils
                 sh "curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3"
                 sh "chmod 700 get_helm.sh"
-                sh "./get_helm.sh"
+                sh "echo ./get_helm.sh"
 
             }
         }
