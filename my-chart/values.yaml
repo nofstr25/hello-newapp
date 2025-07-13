@@ -1,0 +1,14 @@
+replicaCount: 1
+
+image:
+  repository: hello-newapp
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+ingress:
+  enabled: false
