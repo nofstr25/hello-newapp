@@ -6,7 +6,7 @@ def apptag = "${env.BUILD_NUMBER}"
 
 podTemplate(containers: [
       containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent', ttyEnabled: true),
-      containerTemplate(name: 'kank', image: 'gcr.io/kaniko-project/executor:debug-v0.19.0', command: "/busybox/cat", ttyEnabled: true)
+      containerTemplate(name: 'kank', image: 'gcr.io/kaniko-project/executor:debug-v0.19.0', command: "/busybox/cat", args: ["-c", "sleep infinity"], ttyEnabled: true)
   ],
   volumes: [
      configMapVolume(mountPath: '/kaniko/.docker/', configMapName: 'docker-cred')
@@ -24,7 +24,7 @@ podTemplate(containers: [
             sh """
               /kaniko/executor \
                 --context ${env.WORKSPACE} \
-                --dockerfile Dockerfile \
+                --dockerfile ${env.WORKSPACE}/Dockerfile \
                 --destination=${artifactory}/${repo}/${appname}:${apptag} \
                 --destination=${artifactory}/${repo}/${appname}:latest \
                 --skip-tls-verify \
