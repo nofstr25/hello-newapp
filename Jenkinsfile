@@ -3,7 +3,6 @@ def repo = "nofstr25"  // Replace with your DockerHub username
 def artifactory = "docker.io"
 def appimage = "${repo}/${appname}"
 def apptag = "${env.BUILD_NUMBER}"
-def workspace ="/home/ubuntu/workarea/devopshift/hello-newapp"
 
 podTemplate(containers: [
       containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent', ttyEnabled: true),
@@ -22,15 +21,15 @@ podTemplate(containers: [
 
         stage('build') {
             container('kank') {
-            sh '''
+            sh """
               /kaniko/executor \
-                --context ${workspace} \
+                --context ${env.WORKSPACE} \
                 --dockerfile Dockerfile \
                 --destination=${artifactory}/${repo}/${appname}:${apptag} \
                 --destination=${artifactory}/${repo}/${appname}:latest \
                 --skip-tls-verify \
                 --cache=true
-  '''
+  """
             }
         } //end build
 
