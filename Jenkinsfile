@@ -1,8 +1,9 @@
-def appname = "hello-world-pods"
+def appname = "pushed-with-kaniko"
 def repo = "nofstr25"  // Replace with your DockerHub username
 def artifactory = "docker.io"
 def appimage = "${repo}/${appname}"
 def apptag = "${env.BUILD_NUMBER}"
+def workspace
 
 podTemplate(containers: [
       containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent', ttyEnabled: true),
@@ -20,13 +21,16 @@ podTemplate(containers: [
         } // end chackout
 
         stage('build') {
-            container('docker') {
-              echo "Building docker image..."
-	      echo "Original step was using docker for build."
-	      echo "You will need to use kaniko instead"
-              sh "echo docker build -t $appimage --no-cache ."
-              sh "echo docker login $artifactory -u admin -p password"
-              sh "echo docker push $appimage"
+            container('kank') {
+            sh '''
+              /kaniko/executor \
+                --context ${workspace} \
+                --dockerfile ${workspace}/Dockerfile \
+                --destination=${artifactory}/${repo}/${appname}:${apptag} \
+                --destination=${artifactory}/${repo}/${appname}:latest \
+                --skip-tls-verify \
+                --cache=true
+  '''
             }
         } //end build
 
