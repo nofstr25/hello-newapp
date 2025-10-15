@@ -3,7 +3,7 @@ def repo = "nofstr25"  // Replace with your DockerHub username
 def artifactory = "docker.io"
 def appimage = "${repo}/${appname}"
 def apptag = "${env.BUILD_NUMBER}"
-def workspace
+def workspace ="/home/ubuntu/workarea/devopshift/hello-newapp"
 
 podTemplate(containers: [
       containerTemplate(name: 'jnlp', image: 'jenkins/inbound-agent', ttyEnabled: true),
