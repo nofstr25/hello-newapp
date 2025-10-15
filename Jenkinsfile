@@ -25,7 +25,7 @@ podTemplate(containers: [
             sh '''
               /kaniko/executor \
                 --context ${workspace} \
-                --dockerfile ${workspace}/Dockerfile \
+                --dockerfile Dockerfile \
                 --destination=${artifactory}/${repo}/${appname}:${apptag} \
                 --destination=${artifactory}/${repo}/${appname}:latest \
                 --skip-tls-verify \
